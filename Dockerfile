@@ -1,7 +1,7 @@
 # Use official Python lightweight image
 FROM python:3.10-slim
 
-# Prevent writing pyc files and buffering stdout
+# Prevent writing pyc files and buffering stdoutttttt
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
