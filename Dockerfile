@@ -23,4 +23,4 @@ COPY . .
 EXPOSE 8000
 
 # Start production server
-CMD exec gunicorn -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000} app.main:app
+CMD exec gunicorn -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000} main:app
