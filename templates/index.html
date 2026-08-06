@@ -1,1 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI & NLP Powered Resume Reviewer, ATS Score Calculator, and Career Path Recommendation System. Hosted on Render.">
+  <title>AI Resume Reviewer & Recommendation System</title>
+  
+  <!-- FontAwesome Icons & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
 
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="#" class="brand">
+      <div class="brand-icon"><i class="fas fa-brain"></i></div>
+      <div class="brand-title">ResumeAI Engine</div>
+    </a>
+    <span class="nav-badge"><i class="fas fa-bolt"></i> ML Powered</span>
+  </nav>
+
+  <div class="container">
+    <!-- Hero Section -->
+    <header class="hero">
+      <h1>AI Resume Reviewer & <br><span class="gradient-text">Job Recommendation System</span></h1>
+      <p>Upload your resume (PDF, DOCX, TXT) to get an instant ATS compliance score, keyword gap analysis, structural feedback, and recommended career paths.</p>
+    </header>
+
+    <!-- Upload & Job Description Form -->
+    <div class="upload-grid">
+      <!-- Dropzone Card -->
+      <div class="glass-card">
+        <h2 class="card-title"><i class="fas fa-file-upload"></i> Upload Your Resume</h2>
+        <div class="dropzone" id="dropzone">
+          <i class="fas fa-cloud-upload-alt dropzone-icon"></i>
+          <p><strong>Drag & Drop your resume file here</strong></p>
+          <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 6px;">Supports PDF, DOCX, or TXT format (Max 5MB)</p>
+          <input type="file" id="resumeFile" accept=".pdf,.docx,.doc,.txt">
+          <span class="selected-file-badge" id="selectedFileBadge"></span>
+        </div>
+      </div>
+
+      <!-- Target Job Description Card -->
+      <div class="glass-card">
+        <h2 class="card-title"><i class="fas fa-briefcase"></i> Target Job Description (Optional)</h2>
+        <div class="form-group">
+          <label for="jobDescription" class="form-label">Paste the job description you are applying for to get TF-IDF match & skill gap analysis:</label>
+          <textarea id="jobDescription" class="form-control" placeholder="e.g. We are seeking a Machine Learning Engineer proficient in Python, PyTorch, Docker, FastAPI, and Cloud infrastructure..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-bar">
+      <button class="btn btn-primary" id="btnAnalyze">
+        <i class="fas fa-magic"></i> Analyze Resume with AI
+      </button>
+      <button class="btn btn-secondary" id="btnSample">
+        <i class="fas fa-play-circle"></i> Try Demo Sample
+      </button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner"></div>
+      <p style="color: var(--text-muted); font-weight: 500;">Analyzing resume with NLP & Scikit-Learn Engine...</p>
+    </div>
+
+    <!-- Results Section -->
+    <main class="results-section" id="resultsSection">
+      <hr style="border: 0; height: 1px; background: var(--border-color); margin: 3rem 0;">
+
+      <div class="metrics-row">
+        <!-- ATS Score Gauge Card -->
+        <div class="glass-card ats-score-card">
+          <h3 style="font-size: 1.1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">ATS Match Score</h3>
+          <div class="gauge-container">
+            <svg class="gauge-svg" viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#6366f1" />
+                  <stop offset="50%" stop-color="#8b5cf6" />
+                  <stop offset="100%" stop-color="#d946ef" />
+                </linearGradient>
+              </defs>
+              <circle class="gauge-bg" cx="80" cy="80" r="70"></circle>
+              <circle class="gauge-fill" id="gaugeFill" cx="80" cy="80" r="70"></circle>
+            </svg>
+            <div class="score-text">
+              <span class="score-number" id="scoreNumber">0</span>
+              <span class="score-label">out of 100</span>
+            </div>
+          </div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">
+            Word count: <strong id="metaWordCount" style="color: var(--text-main);">0</strong>
+          </div>
+        </div>
+
+        <!-- Sub-scores Breakdown -->
+        <div class="glass-card">
+          <h3 class="card-title"><i class="fas fa-chart-bar"></i> Score Breakdown & Metrics</h3>
+          <div class="sub-scores-grid">
+            <div class="sub-score-item">
+              <div class="sub-score-header">
+                <span>Job Relevance Match</span>
+                <strong id="valContentMatch">0%</strong>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" id="barContentMatch"></div></div>
+            </div>
+
+            <div class="sub-score-item">
+              <div class="sub-score-header">
+                <span>Skills Alignment</span>
+                <strong id="valSkillsAlign">0%</strong>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" id="barSkillsAlign"></div></div>
+            </div>
+
+            <div class="sub-score-item">
+              <div class="sub-score-header">
+                <span>Section Completeness</span>
+                <strong id="valStructure">0%</strong>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" id="barStructure"></div></div>
+            </div>
+
+            <div class="sub-score-item">
+              <div class="sub-score-header">
+                <span>Action-Oriented Verbs</span>
+                <strong id="valActionVerbs">0%</strong>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" id="barActionVerbs"></div></div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 2rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted);">
+            <div><i class="fas fa-envelope"></i> Email: <span id="metaEmail" style="color: var(--text-main);">N/A</span></div>
+            <div><i class="fas fa-phone"></i> Phone: <span id="metaPhone" style="color: var(--text-main);">N/A</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills Gap Analysis -->
+      <div class="upload-grid" style="margin-bottom: 2rem;">
+        <div class="glass-card">
+          <h3 class="card-title"><i class="fas fa-check-circle" style="color: #34d399;"></i> Matched Job Skills</h3>
+          <div class="skill-tags" id="matchedSkillsContainer"></div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="card-title"><i class="fas fa-exclamation-triangle" style="color: #f87171;"></i> Missing Skills (Gap Analysis)</h3>
+          <div class="skill-tags" id="missingSkillsContainer"></div>
+        </div>
+      </div>
+
+      <!-- All Extracted Skills -->
+      <div class="glass-card" style="margin-bottom: 2rem;">
+        <h3 class="card-title"><i class="fas fa-code"></i> All Extracted Resume Skills</h3>
+        <div class="skill-tags" id="detectedSkillsContainer"></div>
+      </div>
+
+      <!-- Actionable Suggestions -->
+      <div class="glass-card" style="margin-bottom: 2rem;">
+        <h3 class="card-title"><i class="fas fa-lightbulb" style="color: #f59e0b;"></i> Key Improvement Suggestions</h3>
+        <ul class="suggestion-list" id="suggestionsContainer"></ul>
+      </div>
+
+      <!-- Job Role Recommendations -->
+      <div class="glass-card">
+        <h3 class="card-title"><i class="fas fa-compass"></i> Recommended Career Roles & Paths</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Based on your extracted skills matrix and experience profile, here are the top matching job roles:</p>
+        <div class="recommendations-grid" id="recommendationsGrid"></div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>AI Resume Reviewer & Recommendation System &bull; Production Ready for GitHub & Render</p>
+    </footer>
+  </div>
+
+  <script src="/static/js/main.js"></script>
+</body>
+</html>
