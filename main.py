@@ -4,9 +4,10 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.parser import ResumeParser
-from app.ml_engine import MLEngine
-from app.recommender import CareerRecommender
+# Fixed imports: removed 'app.' prefix
+from parser import ResumeParser
+from ml_engine import MLEngine
+from recommender import CareerRecommender
 
 app = FastAPI(
     title="AI Resume Reviewer & Recommendation System",
@@ -14,8 +15,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Resolve directories relative to project root
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Fixed directory resolution: since main.py is in the root, we only need one dirname
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
@@ -128,4 +129,5 @@ async def get_sample_review():
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
+    # Fixed uvicorn target to match project structure
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
